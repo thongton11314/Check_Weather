@@ -1,0 +1,2 @@
+https://googleapis.github.io/google-http-java-client/exponential-backoff.html
+https://www.baeldung.com/google-http-client

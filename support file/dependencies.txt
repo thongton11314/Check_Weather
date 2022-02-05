@@ -1,0 +1,16 @@
+ <project>
+     <dependencies>
+
+         <dependency>
+             <groupId>com.google.api.client</groupId>
+             <artifactId>google-api-client-json</artifactId>
+             <version>1.2.3-alpha</version>
+         </dependency>
+
+         <dependency>
+             <groupId>com.google.api-client</groupId>
+             <artifactId>google-api-client</artifactId>
+             <version>1.32.2</version>
+         </dependency>
+     </dependencies>
+</project>

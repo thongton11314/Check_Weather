@@ -1,0 +1,260 @@
+/**
+ * Author: Thong Ton
+ * Date: 10/19/2021
+ */
+
+/*  Free API:
+ *  1. Open Weather Map: https://openweathermap.org/current
+ *      https://api.openweathermap.org/data/2.5/weather?q={city name}&appid={API key}
+ *      https://api.openweathermap.org/data/2.5/weather?q={city name},{state code}&appid={API key}
+ *      https://api.openweathermap.org/data/2.5/weather?q={city name},{state code},{country code}&appid={API key}
+ *      https://api.openweathermap.org/data/2.5/weather?q={city name}&appid={API key}
+ *  
+ *      Exapmle: https://api.openweathermap.org/data/2.5/weather?q=London&appid=398e27a58a97b09125e90cd9e17ac109
+ *  2. Yahooo
+ *      https://developer.yahoo.com/weather/documentation.html#response
+ */
+
+import java.io.IOException;
+import java.net.*;
+import java.net.http.*;
+import java.net.http.HttpResponse.*; 
+import org.json.*;
+
+/*
+HttpRequest request = HttpRequest.newBuilder()
+		.uri(URI.create("https://weatherapi-com.p.rapidapi.com/astronomy.json?q=London"))
+		.header("x-rapidapi-host", "weatherapi-com.p.rapidapi.com")
+		.header("x-rapidapi-key", "ac9bbf8955msh036171369c2d09bp11d2c2jsn5bc982d473cb")
+		.method("GET", HttpRequest.BodyPublishers.noBody())
+		.build();
+HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+System.out.println(response.body());
+*/
+
+// Note:
+// 1. Thinking about the other API to get the city [Done]
+// 2. Set timeout [In process]
+// 3. Retries [In process]
+// 4. Back off [In process]
+public class WeatherRestAPI {
+
+    public static void main(String[] args) {
+        try {
+
+            // Early exit
+            if (args.length != 1) {
+                System.out.println("Error: Need to provide city");
+                System.exit(0);
+            }
+
+            // Main process
+            String city = args[0].toLowerCase();
+
+            // First API
+            var responseOpenWeatherMap = accessOpenWeatherMap(city);            
+            // Convert to JSON OpenWeatherMap
+            JSONObject jsonOpenWeatherMap = new JSONObject(responseOpenWeatherMap.body());
+
+            // Second API
+            var responsesWeatherAPI = accessWeatherAPI(city);
+            // Convert to JSON Weather
+            JSONObject jsonWeatherAPI = new JSONObject(responsesWeatherAPI.body());
+
+
+            // Display the weather condition
+            openweathermapDisplayData(jsonOpenWeatherMap);
+            weatherapiDisplayData(jsonWeatherAPI);
+
+            // Check valid response
+            if (responseOpenWeatherMap.statusCode() != 200 || responsesWeatherAPI.statusCode() != 200) {
+                System.out.println("Warning: Website return status is not 200. Terminat accessing API");
+            }
+        } catch (Exception e) {
+            System.out.print(e.getMessage());
+        }
+    }
+
+    /**
+     * @param city
+     * @return
+     * @throws IOException
+     * @throws InterruptedException
+     * @throws URISyntaxException
+     */
+    private static HttpResponse<String> accessOpenWeatherMap(String city) throws IOException, InterruptedException, URISyntaxException {
+            String curURI = String.format("https://api.openweathermap.org/data/2.5/weather?q=%s&appid=%s"
+                                        , city
+                                        , "398e27a58a97b09125e90cd9e17ac109");
+
+            // Step 1: Get the URL. Need to have {city} and {api_key} to get access API
+            URI uri = new URI(curURI);              
+
+            // Step 2: Create a client side
+            HttpClient client = HttpClient.newHttpClient();
+
+            // Step 3: Create request
+            HttpRequest request = HttpRequest.newBuilder().uri(uri).build();
+
+            // Step 4: Get the Website response
+            HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
+            return response;
+    }
+
+    /**
+     * 
+     * @param city
+     * @return
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    private static HttpResponse<String> accessWeatherAPI(String city) throws IOException, InterruptedException {
+        
+        // Step 1: Get the URL. Need to have {city} and {api_key} to get access API
+        String curURI = String.format("https://weatherapi-com.p.rapidapi.com/astronomy.json?q=%s"
+                                    , city);
+        
+        // Step 2: Create a client side
+        HttpClient client = HttpClient.newHttpClient();
+
+        // Step 3: Create request
+        HttpRequest request = HttpRequest.newBuilder()
+                                        .uri(URI.create(curURI))
+                                        .header("x-rapidapi-host", "weatherapi-com.p.rapidapi.com")
+                                        .header("x-rapidapi-key", "ac9bbf8955msh036171369c2d09bp11d2c2jsn5bc982d473cb")
+                                        .method("GET", HttpRequest.BodyPublishers.noBody())
+                                        .build();
+        
+        // Step 4: Get the Website response
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        System.out.print(response.body());
+        return response;
+    }
+
+    /**
+     * 
+     * @param jsonFromAPI
+     */
+    private static void openweathermapDisplayData(JSONObject jsonFromAPI) {
+        System.out.println("Weather information");
+
+        // {"sys"}->{""}
+        String country = ((JSONObject)jsonFromAPI
+                                        .get("sys"))
+                                        .get("country")
+                                        .toString();
+        System.out.println(" - Country:\t" + country);
+
+        // {"name"}
+        String city = jsonFromAPI
+                        .get("name")
+                        .toString();
+        System.out.println(" - City:\t" + city);
+
+        // {"weather"}->[{""}]
+        String weatherMain = ((JSONObject)((JSONArray)jsonFromAPI
+                                                        .get("weather"))
+                                                        .get(0))
+                                                        .get("main")
+                                                        .toString();
+        String weatherMainDescription = ((JSONObject)((JSONArray)jsonFromAPI
+                                                        .get("weather"))
+                                                        .get(0))
+                                                        .get("description")
+                                                        .toString();
+        System.out.println(" - Weather:");
+        System.out.println("\t- Main:\t\t" + weatherMain);
+        System.out.println("\t- Description:\t" + weatherMainDescription);
+        
+        // {"main"}->{""}
+        String temperature = ((JSONObject)jsonFromAPI
+                                            .get("main"))
+                                            .get("temp")
+                                            .toString();
+        String tempFeelLike = ((JSONObject)jsonFromAPI
+                                            .get("main"))
+                                            .get("feels_like")
+                                            .toString();
+        String tempMin = ((JSONObject)jsonFromAPI
+                                            .get("main"))
+                                            .get("temp_min")
+                                            .toString();;
+        String tempMax = ((JSONObject)jsonFromAPI
+                                            .get("main"))
+                                            .get("temp_max")
+                                            .toString();;
+        String pressure = ((JSONObject)jsonFromAPI
+                                            .get("main"))
+                                            .get("pressure")
+                                            .toString();;
+        String huminity = ((JSONObject)jsonFromAPI
+                                            .get("main"))
+                                            .get("humidity")
+                                            .toString();;
+        System.out.println(" - Main:\t");
+        System.out.println("\t- Temperature:\t\t\t" + temperature);
+        System.out.println("\t- Feel like temperature:\t" + tempFeelLike);
+        System.out.println("\t- Min temperature:\t\t" + tempMin);
+        System.out.println("\t- Max temperature:\t\t" + tempMax);
+        System.out.println("\t- Pressure:\t\t\t" + pressure);
+        System.out.println("\t- Huminity:\t\t\t" + huminity);
+
+        // "wind"->{""}
+        String speed = ((JSONObject)jsonFromAPI
+                                        .get("wind"))
+                                        .get("speed")
+                                        .toString();
+        String degree = ((JSONObject)jsonFromAPI
+                                        .get("wind"))
+                                        .get("deg")
+                                        .toString();
+        System.out.println(" - Wind:");
+        System.out.println("\t- Speed:\t" + speed);
+        System.out.println("\t- Degree:\t" + degree);
+    }
+
+    /**
+     * 
+     * @param jsonFromAPI
+     */
+    private static void weatherapiDisplayData(JSONObject jsonFromAPI) {
+
+        String localtime = ((JSONObject)jsonFromAPI
+                                                .get("location"))
+                                                .get("localtime")
+                                                .toString();
+        System.out.println(" - Local time:\t" + localtime);
+                            
+        String sunrise = ((JSONObject)((JSONObject)jsonFromAPI
+                                                    .get("astronomy"))
+                                                    .get("astro"))
+                                                    .get("sunrise")
+                                                    .toString();
+        String sunset = ((JSONObject)((JSONObject)jsonFromAPI
+                                                    .get("astronomy"))
+                                                    .get("astro"))
+                                                    .get("sunset")
+                                                    .toString();
+        String moonrise = ((JSONObject)((JSONObject)jsonFromAPI
+                                                    .get("astronomy"))
+                                                    .get("astro"))
+                                                    .get("moonrise")
+                                                    .toString();
+        String moonset = ((JSONObject)((JSONObject)jsonFromAPI
+                                                    .get("astronomy"))
+                                                    .get("astro"))
+                                                    .get("moonset")
+                                                    .toString();
+        String moon_phase = ((JSONObject)((JSONObject)jsonFromAPI
+                                                    .get("astronomy"))
+                                                    .get("astro"))
+                                                    .get("moon_phase")
+                                                    .toString();
+        System.out.println(" - Astronomy:");
+        System.out.println("\t- Sunrise:\t" + sunrise);
+        System.out.println("\t- Sunset:\t" + sunset);
+        System.out.println("\t- Moonrise:\t" + moonrise);
+        System.out.println("\t- Moonset:\t" + moonset);
+        System.out.println("\t- Moon Phase:\t" + moon_phase);
+    }
+}

@@ -1,0 +1,64 @@
+Preliminary:
+    API:
+    - You have to sign up for account to get the "API KEY"
+    - How to call api resquest of Open Weather Website:
+        There are three ways:
+        - https://api.openweathermap.org/data/2.5/weather?q={city name}&appid={API key}
+        - https://api.openweathermap.org/data/2.5/weather?q={city name},{state code}&appid={API key}
+        - https://api.openweathermap.org/data/2.5/weather?q={city name},{state code},{country code}&appid={API key}
+    - Resource:
+        - https://openweathermap.org/current
+
+Optional:
+    How to build URL:
+        - There are three commons way to build URL. First using library URL builder. Second, using String.format(). Third, dump all data at sametime;
+        
+        1. URL builder:
+            - It would be nicer if we use URL builder to parse in "City" and "API_KEY" as parameter
+            - https://stackoverflow.com/questions/19538431/is-there-a-right-way-to-build-a-url
+        
+        2. String format:
+            - Example:
+                String.format("https://path1/path2_%s_%s", city, key);
+                The first %s denote that it will take the first argument as city
+                The second %s denote that it wil take the second argument as key
+            - Note:
+                - If want more parameter as string then add more %s, and provide more paramaters.
+                - The number of % must match with the amount of parameter
+            - Resource:
+                https://www.javatpoint.com/java-string-format
+        3. Dump data:
+            Example:
+            - API request: https://api.openweathermap.org/data/2.5/weather?q={city name}&appid={API key}  
+            - URL link: https://api.openweathermap.org/data/2.5/weather?q=london&appid=123456789          
+
+Main Process:
+
+    Step 1: Create a client, http, response:
+        
+        1. Library needed
+            - import java.net.*;
+            - import java.net.http.*;
+            - import java.net.http.HttpResponse.*;
+
+        2. Logical flow: Client -> Request -> Response
+            - First, you need create a client side. Which using HttpClient.
+            - Second, you need to create a request. Which using HttpRequest. Note: you need URI to create request
+            - Finally, you need to create a response. Which using HttpResponse. Note: the reponse help you to pull information from the request 
+            
+        - Resource: 
+            - https://openjdk.java.net/groups/net/httpclient/recipes.html
+
+    Step 2: Parse JSON:
+        - You do your research to know which external JSON library should be use
+
+    Step 3: Design your data display
+        - After get all of the attribute from JSON, you now able to design the data display.
+        - Example:
+            Today: 1/1/1111
+            City: Out of nowhere
+            Weather: -9999 Celcius
+            ...: ...
+
+    Step 4: API doesn't work
+        - Store the previous data in case calling API fail, you still able to display data

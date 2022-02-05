@@ -1,0 +1,6 @@
+Types of Timeout
+    Mainly, there are three types of timeout properties that we can play around with:
+
+    1. Connection Timeout – The time taken to establish the connection with a remote host.
+    2. Socket Timeout – This is the time spent waiting for the data after the connection with the remote host has been established. In other words, it is the time between receiving two packets of data.
+    3. Connection Manager Timeout – Many hosts use a pool of connections to handle concurrent requests. This timeout deals with the time taken to receive an open connection from the pool.
