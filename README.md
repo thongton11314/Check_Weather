@@ -2,7 +2,7 @@
 This application will request input from user where they live (zipcode) then display the weather near by.
 
 ## Description
-  This documentation will explain the WeatherRestAPI class. What kind of APIs are used,
+  The report will explain the WeatherRestAPI class. What kind of APIs are used,
   what external libraries are imported, the flowchart to demonstrate the logic behind
   implementation, and how to compile the source code.
 ## APIs Used
